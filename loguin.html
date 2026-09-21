@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Observatorio Ambiental</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ============ PANTALLA DE LOGIN ============ -->
+<div class="login-screen" id="login-screen">
+  <div class="login-panel">
+    <a class="login-brand" href="index.html" style="text-decoration:none">
+      <div class="brand-icon">♻</div>
+      <div><b>OBSERVATORIO</b><span>AMBIENTAL</span></div>
+    </a>
+    <a href="index.html" style="display:inline-block;font-size:11px;color:var(--muted);text-decoration:none;margin:-24px 0 24px">‹ Volver al portal público</a>
+    <h1>Ingresa a tu cuenta</h1>
+    <p class="login-sub">Accede al observatorio ambiental de Santiago de Cali para consultar información, indicadores y trámites.</p>
+
+    <div class="role-select" id="role-select">
+      <button type="button" class="role-card active" data-role="ciudadano">
+        <span class="role-ico">☺</span>
+        <b>Ciudadano</b>
+        <span>Consulta información pública, mapas, indicadores y trámites del observatorio.</span>
+      </button>
+      <button type="button" class="role-card" data-role="dagma">
+        <span class="role-ico">⚙</span>
+        <b>Usuario DAGMA</b>
+        <span>Accede al módulo de Recurso Hídrico para registrar y consultar visitas técnicas.</span>
+      </button>
+    </div>
+
+    <form id="login-form">
+      <label>Correo electrónico
+        <input type="email" id="login-email" placeholder="nombre@dagma.gov.co" value="ciudadano@correo.com" required>
+      </label>
+      <label>Contraseña
+        <input type="password" id="login-password" placeholder="••••••••" value="••••••••" required>
+      </label>
+      <div class="login-row">
+        <label class="remember"><input type="checkbox" checked> Recordarme</label>
+        <a href="#">¿Olvidaste tu contraseña?</a>
+      </div>
+      <button type="submit" class="btn-primary full">Ingresar como <span id="role-label">Ciudadano</span></button>
+    </form>
+    <p class="login-foot">¿Necesitas ayuda para acceder? <a href="#">Contacta a soporte</a></p>
+  </div>
+  <div class="login-side">
+    <div class="login-side-govbar">
+      <span>🇨🇴 <b>GOV.CO</b></span>
+      <a href="#">PQRS ⇢</a>
+    </div>
+    <div class="login-side-header">
+      <div class="login-side-brand">
+        <div class="brand-icon">♻</div>
+        <div><b>Observatorio Ambiental</b><span>de Santiago de Cali</span></div>
+      </div>
+      <div class="login-side-nav">
+        <span class="active">Inicio</span><span>Indicadores</span><span>Documentación</span><span>Boletines</span><span>Noticias</span>
+      </div>
+    </div>
+    <div class="login-side-body">
+      <div class="login-side-icon">♻</div>
+      <h2>Sistema Integrado de Información Ambiental de Santiago de Cali</h2>
+      <div class="login-side-cards">
+        <div class="lsc-card" id="lsc-comparativo" style="cursor:pointer">
+          <span class="lf-ico">⌁</span>
+          <b>Visor Comparativo</b>
+          <span>Compara múltiples indicadores de forma interactiva</span>
+        </div>
+        <div class="lsc-card" id="lsc-microdata" style="cursor:pointer">
+          <span class="lf-ico">◉</span>
+          <b>Explorador de Microdata</b>
+          <span>Accede a los datos desagregados y realiza tus propios análisis</span>
+        </div>
+        <div class="lsc-card" id="lsc-ods" style="cursor:pointer">
+          <span class="lf-ico">▥</span>
+          <b>Indicadores ODS</b>
+          <span>Consulta los indicadores de los Objetivos de Desarrollo Sostenible</span>
+        </div>
+      </div>
+      <button class="login-side-cta" id="lsc-explore-all">Explorar todos los indicadores</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APLICACIÓN (shell móvil) ============ -->
+<div class="app" id="app" hidden>
+  <div class="phone">
+    <header class="m-header" id="m-header"><!-- se llena por JS según la pantalla --></header>
+    <section id="content" class="m-content"></section>
+    <nav class="bottom-nav" id="bottom-nav"><!-- se llena por JS --></nav>
+  </div>
+</div>
+
+<!-- ============ HOJA "MÁS MÓDULOS" ============ -->
+<div class="sheet-overlay" id="sheet-mas" hidden>
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <h3 class="section-title" style="padding:0 4px">Más módulos</h3>
+    <div id="sheet-mas-list"></div>
+  </div>
+</div>
+
+<!-- ============ VISOR COMPARATIVO (vista pública, sin sesión) ============ -->
+<div class="cmp-modal-overlay" id="cmp-modal" hidden>
+  <div class="cmp-modal">
+    <button class="cmp-modal-close" id="cmp-modal-close">✕</button>
+    <h3 class="section-title">⌁ Visor Comparativo</h3>
+    <p class="tiny" style="margin-bottom:14px">Los datos más relevantes del Observatorio, en un vistazo — antes de iniciar sesión.</p>
+    <div class="home-stats-grid">
+      <div class="home-stat"><b>2.486</b><span>Mediciones realizadas este mes</span></div>
+      <div class="home-stat"><b>1.028</b><span>Visitas IVC realizadas</span></div>
+      <div class="home-stat"><b>892</b><span>Concesiones de agua vigentes</span></div>
+      <div class="home-stat"><b>124</b><span>Conjuntos de datos abiertos</span></div>
+    </div>
+    <div class="grid twoeq" style="margin-top:12px">
+      <div class="card">
+        <h4 style="font-size:11px;margin-bottom:6px">ICA promedio (calidad del agua)</h4>
+        <div class="metric" style="color:var(--green)">72</div>
+        <span class="pill">Bueno</span>
+      </div>
+      <div class="card">
+        <h4 style="font-size:11px;margin-bottom:6px">Ruido ambiental promedio</h4>
+        <div class="metric" style="color:var(--amber)">58 dB</div>
+        <span class="pill amber">Moderado</span>
+      </div>
+    </div>
+    <p class="tiny" style="margin-top:12px">ⓘ Datos consultados del Centro de Monitoreo Ambiental (SEMO) y la IDESC. Para ver el detalle completo por indicador, territorio y periodo, inicia sesión.</p>
+    <button class="btn-primary full" id="cmp-modal-login" style="margin-top:14px">Inicia sesión para ver el detalle completo</button>
+  </div>
+</div>
+
+<!-- ============ EXPLORADOR DE MICRODATA (vista pública, sin sesión) ============ -->
+<div class="cmp-modal-overlay" id="micro-modal" hidden>
+  <div class="cmp-modal">
+    <button class="cmp-modal-close" id="micro-modal-close">✕</button>
+    <h3 class="section-title">◉ Explorador de Microdata</h3>
+    <p class="tiny" style="margin-bottom:14px">Vista previa de los datos desagregados por estación y fecha, tal como se registran en el Centro de Monitoreo Ambiental (SEMO).</p>
+    <table class="table">
+      <thead><tr><th>Estación</th><th>Fecha</th><th>PM 2.5</th><th>PM 10</th><th>Ruido</th><th>ICA</th></tr></thead>
+      <tbody>
+        <tr><td>Ecoparque Río Pance</td><td>12/05/2025</td><td>6.1 µg/m³</td><td>9.4 µg/m³</td><td>48.2 dB</td><td>82</td></tr>
+        <tr><td>Universidad ICESI</td><td>12/05/2025</td><td>24.7 µg/m³</td><td>35.9 µg/m³</td><td>68.3 dB</td><td>55</td></tr>
+        <tr><td>Colegio Ntra. Sra. del Rosario</td><td>12/05/2025</td><td>32.4 µg/m³</td><td>44.8 µg/m³</td><td>74.9 dB</td><td>41</td></tr>
+        <tr><td>Cerro El Morro</td><td>11/05/2025</td><td>5.4 µg/m³</td><td>8.1 µg/m³</td><td>45.0 dB</td><td>85</td></tr>
+      </tbody>
+    </table>
+    <p class="tiny" style="margin-top:12px">ⓘ El conjunto completo incluye más de 3.300 registros históricos, exportables en CSV, XLSX, SHP y GeoJSON desde el Catálogo de Información. Para descargar o filtrar por variable, territorio y periodo, inicia sesión.</p>
+    <button class="btn-primary full" id="micro-modal-login" style="margin-top:14px">Inicia sesión para explorar los datos completos</button>
+  </div>
+</div>
+
+<!-- ============ INDICADORES ODS (vista pública, sin sesión) ============ -->
+<div class="cmp-modal-overlay" id="ods-modal" hidden>
+  <div class="cmp-modal">
+    <button class="cmp-modal-close" id="ods-modal-close">✕</button>
+    <h3 class="section-title">▥ Indicadores ODS</h3>
+    <p class="tiny" style="margin-bottom:14px">Avance de los indicadores del Observatorio frente a los Objetivos de Desarrollo Sostenible aplicables al territorio.</p>
+    <div class="grid twoeq">
+      <div class="card">
+        <h4 style="font-size:11px;margin-bottom:6px">ODS 6 · Agua limpia y saneamiento</h4>
+        <div class="metric" style="color:var(--green)">72</div>
+        <span class="pill">ICA promedio · Bueno</span>
+      </div>
+      <div class="card">
+        <h4 style="font-size:11px;margin-bottom:6px">ODS 11 · Ciudades y comunidades sostenibles</h4>
+        <div class="metric" style="color:var(--blue)">342</div>
+        <span class="pill blue">Estaciones IoT activas</span>
+      </div>
+      <div class="card">
+        <h4 style="font-size:11px;margin-bottom:6px">ODS 13 · Acción por el clima</h4>
+        <div class="metric" style="color:var(--green)">52%</div>
+        <span class="pill">Cobertura vegetal · Estable</span>
+      </div>
+      <div class="card">
+        <h4 style="font-size:11px;margin-bottom:6px">ODS 15 · Vida de ecosistemas terrestres</h4>
+        <div class="metric" style="color:var(--amber)">38%</div>
+        <span class="pill amber">Afectación de franjas protectoras</span>
+      </div>
+    </div>
+    <p class="tiny" style="margin-top:12px">ⓘ Metodología alineada con el seguimiento nacional de los ODS (DANE / PNUD). Para ver la ficha metodológica y la serie histórica de cada indicador, inicia sesión.</p>
+    <button class="btn-primary full" id="ods-modal-login" style="margin-top:14px">Inicia sesión para ver el reporte ODS completo</button>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="app.js"></script>
+</body></html>
