@@ -249,6 +249,7 @@ function renderHome(){
 }
 
 function load(id){
+  if(id!=='home' && homeMiniMap){ homeMiniMap.remove(); homeMiniMap=null; } // limpia el mini-mapa del home al salir, para no dejar instancias de Leaflet huérfanas
   if(id==='home'){
     renderHeader('home');
     document.getElementById('content').innerHTML = renderHome();
@@ -829,7 +830,15 @@ function initGeoMap(){
     marker.bindPopup(geoPopupContent(s));
     return marker;
   });
-  setTimeout(()=>{ if(geoMap) geoMap.invalidateSize(); }, 80);
+  setTimeout(()=>{
+    if(!geoMap) return;
+    geoMap.invalidateSize();
+    /* La selección inicial va aquí, después de invalidateSize(): si el mapa
+       apenas se insertó en el DOM, su contenedor puede no tener todavía un
+       tamaño medible, y flyTo() calcula NaN y lanza una excepción que
+       "cuelga" la vista (ver selectGeoStation). */
+    selectGeoStation(7); /* Colegio Ntra. Sra. del Rosario, seleccionada por defecto */
+  }, 80);
 
   const railLayers = document.getElementById('geo-rail-layers');
   const drawer = document.getElementById('geo-drawer');
@@ -860,14 +869,20 @@ function initGeoMap(){
       dropdown.hidden = true;
     });
   }
-
-  selectGeoStation(7); /* Colegio Ntra. Sra. del Rosario, seleccionada por defecto */
 }
 function selectGeoStation(i){
   const s = geoStations[i];
   const marker = geoMarkers[i];
   if(!s || !marker || !geoMap) return;
-  geoMap.flyTo([s.lat, s.lng], 14, {duration:0.8});
+  try {
+    geoMap.flyTo([s.lat, s.lng], 14, {duration:0.8});
+  } catch(e){
+    /* Respaldo: si el contenedor del mapa todavía no tiene un tamaño medible,
+       flyTo() puede lanzar "Invalid LatLng (NaN, NaN)". setView() no depende
+       de esa animación y no falla por esto, así que la estación igual queda
+       seleccionada en vez de dejar la vista colgada. */
+    geoMap.setView([s.lat, s.lng], 14);
+  }
   marker.openPopup();
 }
 function layerRow(text,checked){return `<div class="row"><span class="check">${checked?'☑':'☐'}</span><span>${text}</span></div>`}
