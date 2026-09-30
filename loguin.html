@@ -105,6 +105,28 @@
   </div>
 </div>
 
+<!-- ============ HOJA "TU ZONA" (RF-08: personalización por comuna/barrio) ============ -->
+<div class="sheet-overlay" id="sheet-zona" hidden>
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <h3 class="section-title" style="padding:0 4px">📍 Tu zona</h3>
+    <p class="tiny" style="padding:0 4px;margin-bottom:12px">Elige tu comuna o corregimiento para ver cómo está el ambiente en tu zona, en vez del promedio de toda la ciudad.</p>
+    <button class="btn solid" id="zona-geoloc" style="width:calc(100% - 8px);margin:0 4px 12px">⌖ Usar mi ubicación</button>
+    <div id="sheet-zona-list"></div>
+  </div>
+</div>
+
+<!-- ============ HOJA "NOTIFICACIONES" (RF-09) ============ -->
+<div class="sheet-overlay" id="sheet-alertas" hidden>
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <h3 class="section-title" style="padding:0 4px">🔔 Notificaciones</h3>
+    <p class="tiny" id="alertas-push-status" style="padding:0 4px;margin-bottom:10px"></p>
+    <button class="btn" id="alertas-push-btn" style="width:calc(100% - 8px);margin:0 4px 14px">Activar notificaciones en este dispositivo</button>
+    <div id="sheet-alertas-list"></div>
+  </div>
+</div>
+
 <!-- ============ VISOR COMPARATIVO (vista pública, sin sesión) ============ -->
 <div class="cmp-modal-overlay" id="cmp-modal" hidden>
   <div class="cmp-modal">

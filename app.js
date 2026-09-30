@@ -85,6 +85,7 @@ function enterApp(){
   app.classList.add(state.role==='dagma' ? 'role-dagma':'role-ciudadano');
   // Usuario DAGMA entra directo al módulo de Recurso Hídrico; el Ciudadano al inicio.
   load(location.hash.slice(1) || (state.role==='dagma' ? 'gestion' : 'home'));
+  cargarDatosReales(); // RF-10: intenta datos reales del CEMUA/IDESC; si no hay API disponible, no cambia nada (ver comentario de la función)
 }
 
 function logout(){
@@ -99,7 +100,13 @@ document.addEventListener('click', e=>{
   if(dropdown && !dropdown.hidden && !e.target.closest('#geo-search-dropdown') && !e.target.closest('#geo-rail-search')){
     dropdown.hidden = true;
   }
+  const homeResults = document.getElementById('home-search-results');
+  if(homeResults && !homeResults.hidden && !e.target.closest('.m-search-box')){
+    homeResults.hidden = true;
+  }
 });
+document.getElementById('sheet-zona')?.addEventListener('click', e=>{ if(e.target.id==='sheet-zona') e.currentTarget.hidden = true; });
+document.getElementById('sheet-alertas')?.addEventListener('click', e=>{ if(e.target.id==='sheet-alertas') e.currentTarget.hidden = true; });
 
 /* ---------------- INICIO (home tipo app bancaria) ---------------- */
 function visibleModules(){
@@ -108,13 +115,14 @@ function visibleModules(){
 
 function renderHomeHeader(){
   const initials = state.name.split(' ').map(x=>x[0]).slice(0,2).join('').toUpperCase();
+  const hasAlerts = getActiveAlerts(state.zona).length>0;
   return `
   <div class="m-top">
     <button class="m-avatar-btn" id="btn-profile"><span class="m-avatar">${initials}</span> ›</button>
     <div class="m-greeting">Hola, ${state.name.split(' ')[0].toUpperCase()}</div>
     <div class="m-icons">
       <button id="btn-help" title="Ayuda">?</button>
-      <button id="btn-bell" title="Notificaciones">🔔<span class="dot"></span></button>
+      <button id="btn-bell" title="Notificaciones">🔔${hasAlerts?'<span class="dot"></span>':''}</button>
     </div>
   </div>`;
 }
@@ -132,6 +140,10 @@ function renderHeader(id){
     header.innerHTML = renderHomeHeader();
     document.getElementById('btn-profile')?.addEventListener('click', ()=>{
       if(confirm('¿Cerrar sesión de '+state.name+'?')) logout();
+    });
+    document.getElementById('btn-bell')?.addEventListener('click', ()=>{
+      renderAlertasSheet();
+      document.getElementById('sheet-alertas').hidden = false;
     });
   } else {
     const m = modules.find(x=>x.id===id);
@@ -179,14 +191,40 @@ document.getElementById('sheet-mas').addEventListener('click', e=>{
 
 function renderHome(){
   const rest = visibleModules();
+  const zr = zonaResumen(state.zona);
+  const estCfg = ESTADOS[zr.estado] || ESTADOS.bueno;
+  const icaTxt = zr.ica===null ? '—' : zr.ica;
+  const ruidoTxt = zr.ruido===null ? '—' : `${zr.ruido} dB`;
   return `
+  <div class="m-search">
+    <div class="m-search-box">
+      <input id="home-search-input" class="m-search-input" autocomplete="off" placeholder="⌕ Busca una estación, un trámite o un tema">
+      <div id="home-search-results" class="m-search-results" hidden></div>
+    </div>
+  </div>
+
   <div class="m-section" style="padding-top:2px">
     <div class="m-section-head"><h2>Mis módulos</h2><button class="m-pill-btn" data-nav="catalogo">◉ Datos abiertos</button></div>
   </div>
+  <div class="m-section" style="padding-top:0;padding-bottom:0">
+    <div class="m-section-head" style="margin-bottom:8px">
+      <h3 class="section-title" style="margin:0">${state.zona==='Toda la ciudad' ? 'Así está Cali hoy' : 'Así está tu zona hoy'}</h3>
+      <button class="m-pill-btn sm" id="btn-zona">📍 ${state.zona}</button>
+    </div>
+  </div>
   <div class="m-cards-scroll">
-    <div class="m-summary-card c-green"><div class="msc-top"><span>≈ Calidad del agua</span></div><div class="msc-value">72</div><div class="msc-label">ICA promedio · Bueno</div></div>
+    <div class="m-summary-card c-green"><div class="msc-top"><span>≈ Calidad del agua</span></div><div class="msc-value">${icaTxt}</div><div class="msc-label">ICA promedio · ${estCfg.label}</div></div>
     <div class="m-summary-card c-blue"><div class="msc-top"><span>☑ Visitas registradas</span></div><div class="msc-value">${visitasRecursoHidrico.length + 1024}</div><div class="msc-label">Recurso hídrico · este mes</div></div>
-    <div class="m-summary-card c-amber"><div class="msc-top"><span>♪ Ruido ambiental</span></div><div class="msc-value">58 dB</div><div class="msc-label">Promedio · Moderado</div></div>
+    <div class="m-summary-card c-amber"><div class="msc-top"><span>♪ Ruido ambiental</span></div><div class="msc-value">${ruidoTxt}</div><div class="msc-label">Promedio · ${estCfg.label}</div></div>
+  </div>
+
+  <div class="m-minimap-card">
+    <div class="m-minimap-head"><h3 class="section-title" style="margin:0">⌖ Mapa de estaciones${state.zona==='Toda la ciudad' ? '' : ' · '+state.zona}</h3></div>
+    <div id="home-mini-map" class="m-minimap"></div>
+    <div class="m-minimap-foot">
+      <span class="tiny">${zr.totalEstaciones} estación(es) · ${zr.estacionesActivas} activa(s)</span>
+      <button class="card-link" style="margin:0;padding:0;border:0;background:none" data-nav="geovisor">Ver mapa completo ›</button>
+    </div>
   </div>
 
   <div class="m-services">
@@ -205,9 +243,7 @@ function renderHome(){
     <h3 class="section-title" style="margin-bottom:10px">Le puede interesar</h3>
   </div>
   <div class="m-chips">
-    <button class="m-chip solid" data-nav="consulta">Denuncias ambientales</button>
-    <button class="m-chip" data-nav="reportes">Boletín ambiental</button>
-    <button class="m-chip" data-nav="indicadores">Preguntas frecuentes</button>
+    ${contenidoRelevante()}
   </div>
   <button class="m-fab" title="Ayuda">💬</button>`;
 }
@@ -220,6 +256,7 @@ function load(id){
     history.replaceState(null,'','#home');
     window.scrollTo({top:0,behavior:'smooth'});
     wireModuleInteractions();
+    maybeNotifyCritical();
     return;
   }
   const visible = visibleModules();
@@ -440,23 +477,272 @@ const ESTADOS = {
 /* En producción este arreglo se reemplaza por la respuesta de la API
    del Centro de Monitoreo Unificado Ambiental (CEMUA): fetch('https://api.dagma.gov.co/estaciones') */
 const geoStations = [
-  { id:1,  nombre:'Ecoparque Río Pance',              lat:3.3230, lng:-76.5980, estado:'bueno',    pm25:6.1,  pm10:9.4,  ruido:48.2, ica:82 },
-  { id:2,  nombre:'Club Farallones',                  lat:3.2990, lng:-76.5750, estado:'bueno',    pm25:7.8,  pm10:11.2, ruido:51.0, ica:79 },
-  { id:3,  nombre:'Vereda La Buitrera',                lat:3.3400, lng:-76.6030, estado:'moderado', pm25:14.5, pm10:22.1, ruido:58.4, ica:68 },
-  { id:4,  nombre:'Carrera 125 - La Vitrera',          lat:3.3340, lng:-76.5700, estado:'bueno',    pm25:8.9,  pm10:13.0, ruido:53.1, ica:75 },
-  { id:5,  nombre:'Ciudad Pacífico',                   lat:3.3560, lng:-76.5470, estado:'moderado', pm25:18.2, pm10:27.6, ruido:61.7, ica:63 },
-  { id:6,  nombre:'Hacienda Cataluña',                 lat:3.3480, lng:-76.5560, estado:'bueno',    pm25:9.3,  pm10:14.4, ruido:52.9, ica:77 },
-  { id:7,  nombre:'Universidad ICESI',                 lat:3.3390, lng:-76.5320, estado:'alto',     pm25:24.7, pm10:35.9, ruido:68.3, ica:55 },
-  { id:8,  nombre:'Colegio Ntra. Sra. del Rosario',    lat:3.3745, lng:-76.5330, estado:'critico',  pm25:32.4, pm10:44.8, ruido:74.9, ica:41 },
-  { id:9,  nombre:'Club Campestre de Cali',            lat:3.3800, lng:-76.5560, estado:'bueno',    pm25:7.0,  pm10:10.8, ruido:49.5, ica:81 },
-  { id:10, nombre:'Cerro El Morro',                    lat:3.3830, lng:-76.5680, estado:'bueno',    pm25:5.4,  pm10:8.1,  ruido:45.0, ica:85 },
-  { id:11, nombre:'Alto del Rosario',                  lat:3.3900, lng:-76.5750, estado:'moderado', pm25:15.1, pm10:23.0, ruido:57.2, ica:66 },
-  { id:12, nombre:'Universidad del Valle - Meléndez',  lat:3.3760, lng:-76.5390, estado:'alto',     pm25:26.9, pm10:38.2, ruido:66.4, ica:52 },
-  { id:13, nombre:'Antiguo Basurero de Navarro',       lat:3.3820, lng:-76.4970, estado:'critico',  pm25:38.6, pm10:52.3, ruido:71.5, ica:33 },
-  { id:14, nombre:'Estación Villacarmelo',             lat:3.3120, lng:-76.5250, estado:'inactivo', pm25:null, pm10:null, ruido:null, ica:null }
+  { id:1,  nombre:'Ecoparque Río Pance',              lat:3.3230, lng:-76.5980, estado:'bueno',    pm25:6.1,  pm10:9.4,  ruido:48.2, ica:82, comuna:'Pance' },
+  { id:2,  nombre:'Club Farallones',                  lat:3.2990, lng:-76.5750, estado:'bueno',    pm25:7.8,  pm10:11.2, ruido:51.0, ica:79, comuna:'Pance' },
+  { id:3,  nombre:'Vereda La Buitrera',                lat:3.3400, lng:-76.6030, estado:'moderado', pm25:14.5, pm10:22.1, ruido:58.4, ica:68, comuna:'La Buitrera' },
+  { id:4,  nombre:'Carrera 125 - La Vitrera',          lat:3.3340, lng:-76.5700, estado:'bueno',    pm25:8.9,  pm10:13.0, ruido:53.1, ica:75, comuna:'La Vitrera' },
+  { id:5,  nombre:'Ciudad Pacífico',                   lat:3.3560, lng:-76.5470, estado:'moderado', pm25:18.2, pm10:27.6, ruido:61.7, ica:63, comuna:'Comuna 22' },
+  { id:6,  nombre:'Hacienda Cataluña',                 lat:3.3480, lng:-76.5560, estado:'bueno',    pm25:9.3,  pm10:14.4, ruido:52.9, ica:77, comuna:'Comuna 22' },
+  { id:7,  nombre:'Universidad ICESI',                 lat:3.3390, lng:-76.5320, estado:'alto',     pm25:24.7, pm10:35.9, ruido:68.3, ica:55, comuna:'Comuna 22' },
+  { id:8,  nombre:'Colegio Ntra. Sra. del Rosario',    lat:3.3745, lng:-76.5330, estado:'critico',  pm25:32.4, pm10:44.8, ruido:74.9, ica:41, comuna:'Comuna 19' },
+  { id:9,  nombre:'Club Campestre de Cali',            lat:3.3800, lng:-76.5560, estado:'bueno',    pm25:7.0,  pm10:10.8, ruido:49.5, ica:81, comuna:'Comuna 17' },
+  { id:10, nombre:'Cerro El Morro',                    lat:3.3830, lng:-76.5680, estado:'bueno',    pm25:5.4,  pm10:8.1,  ruido:45.0, ica:85, comuna:'Comuna 1' },
+  { id:11, nombre:'Alto del Rosario',                  lat:3.3900, lng:-76.5750, estado:'moderado', pm25:15.1, pm10:23.0, ruido:57.2, ica:66, comuna:'Comuna 1' },
+  { id:12, nombre:'Universidad del Valle - Meléndez',  lat:3.3760, lng:-76.5390, estado:'alto',     pm25:26.9, pm10:38.2, ruido:66.4, ica:52, comuna:'Comuna 18' },
+  { id:13, nombre:'Antiguo Basurero de Navarro',       lat:3.3820, lng:-76.4970, estado:'critico',  pm25:38.6, pm10:52.3, ruido:71.5, ica:33, comuna:'Navarro' },
+  { id:14, nombre:'Estación Villacarmelo',             lat:3.3120, lng:-76.5250, estado:'inactivo', pm25:null, pm10:null, ruido:null, ica:null, comuna:'Villacarmelo' }
 ];
 const CALI_CENTER = [3.3520, -76.5450];
 let geoMap = null, geoMarkers = [];
+
+/* =========================================================
+   MEJORAS PANTALLA DE INICIO — ROL CIUDADANO (RF-05 a RF-10)
+   Ver: Requerimientos_Mejora_Home_Ciudadano.pdf, Etapas 2 y 3.
+   Nota: la comuna/corregimiento asignada a cada estación en
+   geoStations es ilustrativa para este prototipo (no proviene
+   de una capa geográfica real de límites comunales).
+   ========================================================= */
+
+/* ---- RF-08: personalización por comuna/barrio (mock con localStorage,
+   tal como lo define la sección 2 del PDF para la Etapa 3) ---- */
+const ZONAS = ['Toda la ciudad','Comuna 1','Comuna 17','Comuna 18','Comuna 19','Comuna 22','La Buitrera','La Vitrera','Navarro','Pance','Villacarmelo'];
+state.zona = (function(){
+  try { return localStorage.getItem('oa_zona') || 'Toda la ciudad'; } catch(e){ return 'Toda la ciudad'; }
+})();
+
+function setZona(z){
+  state.zona = z;
+  try { localStorage.setItem('oa_zona', z); } catch(e){ /* localStorage no disponible: la selección solo dura la sesión */ }
+  pushNotifiedOnce = false;
+  const sheet = document.getElementById('sheet-zona');
+  if(sheet) sheet.hidden = true;
+  if(location.hash === '#home') load('home');
+}
+
+function haversineKm(lat1,lng1,lat2,lng2){
+  const R=6371, toRad=d=>d*Math.PI/180;
+  const dLat=toRad(lat2-lat1), dLng=toRad(lng2-lng1);
+  const a=Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLng/2)**2;
+  return 2*R*Math.asin(Math.sqrt(a));
+}
+
+function detectarZonaPorUbicacion(){
+  const btn = document.getElementById('zona-geoloc');
+  if(!navigator.geolocation){ alert('Este navegador no soporta geolocalización.'); return; }
+  if(btn) btn.textContent = '⌖ Detectando tu ubicación…';
+  navigator.geolocation.getCurrentPosition(pos=>{
+    const {latitude,longitude} = pos.coords;
+    let closest = geoStations[0], min = Infinity;
+    geoStations.forEach(s=>{
+      const d = haversineKm(latitude,longitude,s.lat,s.lng);
+      if(d<min){ min=d; closest=s; }
+    });
+    setZona(closest.comuna);
+  }, ()=>{
+    if(btn) btn.textContent = '⌖ Usar mi ubicación';
+    alert('No fue posible obtener tu ubicación. Puedes elegir tu zona manualmente en la lista.');
+  }, { timeout:8000 });
+}
+
+function renderZonaSheet(){
+  const list = document.getElementById('sheet-zona-list');
+  if(list) list.innerHTML = ZONAS.map(z=>`
+    <div class="sheet-item" data-zona="${z}" style="cursor:pointer">
+      <span class="si-ico">${z===state.zona?'✓':'📍'}</span>
+      <div><b>${z}</b>${z==='Toda la ciudad'?'<span>Promedio general de la ciudad</span>':`<span>${stationsInZona(z).length} estación(es) de monitoreo</span>`}</div>
+    </div>`).join('');
+  list?.querySelectorAll('[data-zona]').forEach(it=>{
+    it.addEventListener('click', ()=> setZona(it.dataset.zona));
+  });
+  const geolocBtn = document.getElementById('zona-geoloc');
+  if(geolocBtn){ geolocBtn.textContent = '⌖ Usar mi ubicación'; geolocBtn.onclick = detectarZonaPorUbicacion; }
+}
+function stationsInZona(zona){
+  return (!zona || zona==='Toda la ciudad') ? geoStations : geoStations.filter(s=>s.comuna===zona);
+}
+
+const SEVERIDAD_ORDEN = { bueno:0, moderado:1, alto:2, critico:3 };
+function zonaResumen(zona){
+  const list = stationsInZona(zona);
+  const activas = list.filter(s=>s.estado!=='inactivo');
+  const avg = key => activas.length ? Math.round(activas.reduce((a,s)=>a+s[key],0)/activas.length) : null;
+  const peor = activas.reduce((w,s)=> (SEVERIDAD_ORDEN[s.estado]>SEVERIDAD_ORDEN[w?w.estado:'bueno']) ? s : w, null);
+  return {
+    ica: avg('ica'), ruido: avg('ruido'), pm25: avg('pm25'),
+    estado: peor ? peor.estado : 'bueno',
+    totalEstaciones: list.length, estacionesActivas: activas.length
+  };
+}
+
+/* ---- Fuente única de alertas activas: alimenta el mini-mapa (RF-05),
+   "Le puede interesar" (RF-07) y las notificaciones (RF-09) ---- */
+function getActiveAlerts(zonaFiltro){
+  const alerts = [];
+  stationsInZona(zonaFiltro).forEach(s=>{
+    if(s.estado==='critico') alerts.push({ sev:3, icon:'⚠', title:`Estación en estado crítico: ${s.nombre}`, sub:`${s.comuna} · PM2.5 ${s.pm25} µg/m³`, nav:'geovisor', stationId:s.id });
+    else if(s.estado==='inactivo') alerts.push({ sev:1, icon:'◌', title:`Estación fuera de línea: ${s.nombre}`, sub:s.comuna, nav:'geovisor', stationId:s.id });
+  });
+  expedientesRecursoHidrico.forEach(e=>{
+    const v = estadoVigencia(e.vigencia);
+    if(v.label==='Vencido') alerts.push({ sev:3, icon:'▤', title:`Permiso vencido: ${e.tipo}`, sub:`${e.titular} · ${e.comuna}`, nav:'gestion' });
+    else if(v.label==='Por vencer') alerts.push({ sev:2, icon:'▤', title:`Permiso próximo a vencer: ${e.tipo}`, sub:`${e.titular} · vence ${e.vigencia}`, nav:'gestion' });
+  });
+  return alerts.sort((a,b)=>b.sev-a.sev);
+}
+
+/* ---- RF-05: vista previa del Geovisor en el home ---- */
+let homeMiniMap = null;
+function initHomeMiniMap(){
+  const el = document.getElementById('home-mini-map');
+  if(!el || typeof L==='undefined') return;
+  if(homeMiniMap){ homeMiniMap.remove(); homeMiniMap=null; }
+  const list = stationsInZona(state.zona);
+  const center = list.length ? [list.reduce((a,s)=>a+s.lat,0)/list.length, list.reduce((a,s)=>a+s.lng,0)/list.length] : CALI_CENTER;
+  homeMiniMap = L.map(el, { zoomControl:false, attributionControl:false, dragging:!L.Browser.mobile, scrollWheelZoom:false }).setView(center, list.length>1?13:14);
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', { maxZoom:19 }).addTo(homeMiniMap);
+  list.forEach(s=>{
+    const icon = L.divIcon({ className:'', html:`<div class="estacion-marker" style="width:26px;height:26px;font-size:10px;background:${(ESTADOS[s.estado]||ESTADOS.inactivo).color}">${s.id}</div>`, iconSize:[26,26], iconAnchor:[13,13] });
+    L.marker([s.lat,s.lng],{icon,title:s.nombre}).addTo(homeMiniMap).bindPopup(geoPopupContent(s));
+  });
+  setTimeout(()=>{ if(homeMiniMap) homeMiniMap.invalidateSize(); }, 80);
+}
+
+/* ---- RF-06: buscador en el home (estaciones, trámites y módulos) ---- */
+const TRAMITES_HOME = [
+  { label:'Solicitar concesión de agua', nav:'gestion' },
+  { label:'Permiso de vertimientos', nav:'gestion' },
+  { label:'Radicar denuncia o PQRS ambiental', nav:'consulta' },
+  { label:'Descargar boletín ambiental', nav:'reportes' },
+  { label:'Consultar catálogo de datos abiertos', nav:'catalogo' }
+];
+function homeSearchIndex(){
+  const mods = visibleModules().map(m=>({ tipo:'Módulo', icon:m.icon, label:m.label, nav:m.id }));
+  const trams = TRAMITES_HOME.map(t=>({ tipo:'Trámite', icon:'▤', label:t.label, nav:t.nav }));
+  const est = geoStations.map((s,i)=>({ tipo:'Estación', icon:'⌖', label:s.nombre, station:i }));
+  return [...mods, ...trams, ...est];
+}
+function wireHomeSearch(){
+  const input = document.getElementById('home-search-input');
+  const results = document.getElementById('home-search-results');
+  if(!input || !results) return;
+  const index = homeSearchIndex();
+  let matches = [];
+  const render = q=>{
+    const term = q.trim().toLowerCase();
+    if(!term){ results.hidden = true; results.innerHTML=''; return; }
+    matches = index.filter(it=>it.label.toLowerCase().includes(term)).slice(0,7);
+    results.innerHTML = matches.length ? matches.map((it,i)=>`
+      <div class="m-search-item" data-i="${i}"><span>${it.icon}</span><span>${it.label}</span><span class="msi-tag">${it.tipo}</span></div>
+    `).join('') : `<div class="m-search-item" style="cursor:default">Sin resultados para "${q}"</div>`;
+    results.hidden = false;
+    results.querySelectorAll('[data-i]').forEach(row=>{
+      row.addEventListener('click', ()=>{
+        const it = matches[Number(row.dataset.i)];
+        results.hidden = true; input.value='';
+        if(it.station!==undefined){ load('geovisor'); setTimeout(()=>selectGeoStation(it.station),150); }
+        else load(it.nav);
+      });
+    });
+  };
+  input.addEventListener('input', ()=>render(input.value));
+  input.addEventListener('focus', ()=>{ if(input.value) render(input.value); });
+}
+
+/* ---- RF-07: "Le puede interesar" dinámico, priorizado según alertas activas ---- */
+function contenidoRelevante(){
+  const alerts = getActiveAlerts(state.zona);
+  if(!alerts.length){
+    return `
+    <button class="m-chip solid" data-nav="consulta">Denuncias ambientales</button>
+    <button class="m-chip" data-nav="reportes">Boletín ambiental</button>
+    <button class="m-chip" data-nav="indicadores">Preguntas frecuentes</button>`;
+  }
+  return alerts.slice(0,3).map((a,i)=>`<button class="m-chip ${i===0?'solid':''}" data-nav="${a.nav}">${a.icon} ${a.title}</button>`).join('');
+}
+
+/* ---- RF-09: notificaciones ----
+   IMPORTANTE — límite real de esta implementación: esto usa la Notification API
+   nativa del navegador (permiso + notificación local mientras la pestaña sigue
+   abierta). NO es Web Push real: eso requiere backend + service worker + claves
+   VAPID, que la sección 2 del PDF ubica explícitamente como "meta de evolución,
+   no se simula en el prototipo estático". Como el requerimiento RF-09 pide
+   sustituir el punto rojo simulado por algo real, esta es la aproximación más
+   honesta posible sin esa infraestructura: el punto ahora refleja alertas reales
+   calculadas de los datos (no un adorno fijo), y si el usuario da permiso,
+   dispara una notificación real del sistema operativo. */
+let pushNotifiedOnce = false;
+function maybeNotifyCritical(){
+  if(pushNotifiedOnce || !('Notification' in window) || Notification.permission!=='granted') return;
+  const critica = getActiveAlerts(state.zona).find(a=>a.sev===3);
+  if(critica){
+    pushNotifiedOnce = true;
+    try { new Notification('Observatorio Ambiental', { body: critica.title }); } catch(e){ /* algunos navegadores exigen un service worker para notificaciones; se omite en silencio */ }
+  }
+}
+function renderAlertasSheet(){
+  const alerts = getActiveAlerts(state.zona);
+  const list = document.getElementById('sheet-alertas-list');
+  const status = document.getElementById('alertas-push-status');
+  const btn = document.getElementById('alertas-push-btn');
+  if(list) list.innerHTML = alerts.length ? alerts.map(a=>`
+    <div class="sheet-item" ${a.nav?`data-go="${a.nav}"`:''} style="cursor:${a.nav?'pointer':'default'}">
+      <span class="si-ico">${a.icon}</span>
+      <div><b>${a.title}</b><span>${a.sub||''}</span></div>
+    </div>`).join('') : `<p class="tiny" style="padding:10px 4px">No tienes alertas activas por ahora.</p>`;
+  list?.querySelectorAll('[data-go]').forEach(it=>{
+    it.addEventListener('click', ()=>{ document.getElementById('sheet-alertas').hidden = true; load(it.dataset.go); });
+  });
+  if(!('Notification' in window)){
+    if(status) status.textContent = 'Tu navegador no soporta notificaciones.';
+    if(btn) btn.hidden = true;
+  } else if(Notification.permission==='granted'){
+    if(status) status.textContent = '✓ Notificaciones activadas en este dispositivo.';
+    if(btn) btn.hidden = true;
+  } else if(Notification.permission==='denied'){
+    if(status) status.textContent = 'Bloqueaste las notificaciones para este sitio; actívalas desde los ajustes del navegador.';
+    if(btn) btn.hidden = true;
+  } else {
+    if(status) status.textContent = 'Recibe un aviso cuando una estación de tu zona pase a estado crítico.';
+    if(btn){
+      btn.hidden = false;
+      btn.onclick = ()=> Notification.requestPermission().then(()=>{ pushNotifiedOnce=false; renderAlertasSheet(); maybeNotifyCritical(); });
+    }
+  }
+}
+
+/* ---- RF-10: integración con datos reales del CEMUA / IDESC, con degradación segura ----
+   LÍMITE REAL: no existe todavía una URL de API confirmada, con CORS habilitado y
+   accesible desde este prototipo estático — el propio PDF (sección 2) ubica esta
+   integración en la fase de "evolución a producción", fuera del alcance del
+   prototipo actual. Lo que sí se puede construir ahora, y es lo que hace este
+   bloque, es la capa de integración lista para consumir la API real apenas exista:
+   intenta el fetch documentado y, si falla (sin backend, sin red, CORS, etc.),
+   conserva los datos de referencia locales sin romper la experiencia. */
+const API_ESTACIONES_URL = 'https://api.dagma.gov.co/estaciones';
+const API_VISITAS_URL = 'https://api.dagma.gov.co/recurso-hidrico/visitas';
+async function fetchConFallback(url, fallbackValue){
+  try {
+    const ctrl = typeof AbortController!=='undefined' ? new AbortController() : null;
+    const t = ctrl ? setTimeout(()=>ctrl.abort(), 4000) : null;
+    const res = await fetch(url, ctrl ? { signal: ctrl.signal } : undefined);
+    if(t) clearTimeout(t);
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const data = await res.json();
+    if(!Array.isArray(data) || !data.length) throw new Error('Respuesta vacía');
+    return data;
+  } catch(err){
+    console.info('[CEMUA/IDESC] API real no disponible todavía, se mantienen los datos de referencia locales:', err.message);
+    return fallbackValue;
+  }
+}
+async function cargarDatosReales(){
+  const estacionesReales = await fetchConFallback(API_ESTACIONES_URL, null);
+  if(estacionesReales){ geoStations.length = 0; geoStations.push(...estacionesReales); }
+  const visitasReales = await fetchConFallback(API_VISITAS_URL, null);
+  if(visitasReales){ visitasRecursoHidrico.length = 0; visitasRecursoHidrico.push(...visitasReales); }
+  if((estacionesReales || visitasReales) && location.hash==='#home') load('home');
+}
+
 function geoPopupContent(s){
   const cfg = ESTADOS[s.estado] || ESTADOS.inactivo;
   const dato = (v,u) => (v===null||v===undefined) ? '— sin datos —' : `${v} ${u}`;
@@ -1643,6 +1929,12 @@ function wireModuleInteractions(){
     el.addEventListener('click', ()=> load(el.dataset.nav));
   });
   if(document.getElementById('geo-leaflet-map')) initGeoMap();
+  if(document.getElementById('home-mini-map')) initHomeMiniMap();
+  if(document.getElementById('home-search-input')) wireHomeSearch();
+  document.getElementById('btn-zona')?.addEventListener('click', ()=>{
+    renderZonaSheet();
+    document.getElementById('sheet-zona').hidden = false;
+  });
 
   /* Recurso Hídrico: navegación interna (main / registrar / historico) */
   document.querySelectorAll('[data-rh]').forEach(el=>{
