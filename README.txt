@@ -1,4 +1,4 @@
-OBSERVATORIO AMBIENTAL - PROTOTIPO MÓVIL (estilo app bancaria)
+﻿OBSERVATORIO AMBIENTAL - PROTOTIPO MÓVIL (estilo app bancaria)
 ================================================================
 
 NOVEDAD DE ESTA VERSIÓN
@@ -31,7 +31,7 @@ RECURSO HÍDRICO: REGISTRO Y HISTÓRICO DE VISITAS (nuevo)
   registradas (las de ejemplo + las que se registren en la sesión),
   con fecha, punto, tipo de actividad, comuna, técnico y observación.
 - En producción, esto se reemplaza por un CRUD real contra la API
-  del Centro de Monitoreo Ambiental (SEMO).
+  del Centro de Monitoreo Unificado Ambiental (CEMUA).
 
 CÓMO USARLO
 1. Abra "login.html" en Chrome o Edge (requiere internet para el

@@ -1,4 +1,4 @@
-/* =========================================================
+﻿/* =========================================================
    OBSERVATORIO AMBIENTAL - Prototipo frontend (estático)
    Roles: admin (Administrador) / user (Usuario)
    ========================================================= */
@@ -438,7 +438,7 @@ const ESTADOS = {
   inactivo: { color: '#95a5a6', label: 'Fuera de línea' }
 };
 /* En producción este arreglo se reemplaza por la respuesta de la API
-   del Centro de Monitoreo Ambiental (SEMO): fetch('https://api.dagma.gov.co/estaciones') */
+   del Centro de Monitoreo Unificado Ambiental (CEMUA): fetch('https://api.dagma.gov.co/estaciones') */
 const geoStations = [
   { id:1,  nombre:'Ecoparque Río Pance',              lat:3.3230, lng:-76.5980, estado:'bueno',    pm25:6.1,  pm10:9.4,  ruido:48.2, ica:82 },
   { id:2,  nombre:'Club Farallones',                  lat:3.2990, lng:-76.5750, estado:'bueno',    pm25:7.8,  pm10:11.2, ruido:51.0, ica:79 },
@@ -797,7 +797,7 @@ const tecnicosRecursoHidrico = ['Juan Pablo Rojas','Sofía Cardona','Carlos Andr
 const categoriasHallazgo = ['Vertimientos sin permiso','Ocupación de cauce','Inadecuado manejo de residuos','Uso no autorizado del recurso hídrico','Intervención de rondas hídricas','Otro'];
 
 /* En producción esto se reemplaza por GET/POST/PUT contra la API del
-   Centro de Monitoreo Ambiental (SEMO): /api/recurso-hidrico/visitas */
+   Centro de Monitoreo Unificado Ambiental (CEMUA): /api/recurso-hidrico/visitas */
 let visitasRecursoHidrico = [
   { id:1, expediente:'EXP-2025-0456', titular:'Acueducto Rural La Elvira', nit:'900.111.222-3', tipoExp:'Concesión de agua superficial', comuna:'La Elvira', predio:'Bocatoma acueducto rural',
     fecha:'12/05/2025', hora:'08:30 a. m.', numeroActa:'ACT-2025-0891', tipoVisita:'Seguimiento', tecnico:'Juan Pablo Rojas', apoyo:'', resultado:'Conforme', motivo:'Seguimiento rutinario a la concesión vigente.',
@@ -1212,7 +1212,7 @@ function gestion(){
   }
   return `
   ${rhActionsRow()}
-  <div class="readonly-banner">ⓘ Este módulo es de solo consulta. El registro y la edición de expedientes, hallazgos y permisos se realizan en el Centro de Monitoreo Ambiental (SEMO); el Observatorio consulta esta información mediante servicios/API.</div>
+  <div class="readonly-banner">ⓘ Este módulo es de solo consulta. El registro y la edición de expedientes, hallazgos y permisos se realizan en el Centro de Monitoreo Unificado Ambiental (CEMUA); el Observatorio consulta esta información mediante servicios/API.</div>
   <p class="tiny" style="margin:-6px 0 14px">Módulo piloto: seguimiento priorizado al <b>recurso hídrico</b> (detalle de actividad sobre cuerpos de agua superficial y alertas de recorridos, seguimientos, controles e inspecciones).</p>
   <div class="grid kpis6">
     ${kpi('☑','','EXPEDIENTES Y CONCESIONES DE AGUA','1.248','vs. periodo anterior','↑ 12%')}
@@ -1572,7 +1572,7 @@ function admin(){
     return `<div class="card" style="text-align:center;padding:60px 20px"><div class="bubble" style="margin:0 auto 14px;width:56px;height:56px;font-size:26px">⛔</div><h3 class="section-title" style="justify-content:center">Acceso restringido</h3><p class="tiny">Este módulo está disponible solo para usuarios DAGMA.</p></div>`;
   }
   return `
-  <p class="tiny" style="background:#f3f6f4;padding:9px 13px;border-radius:9px;margin-bottom:14px">ⓘ Este panel administra únicamente los textos, noticias y elementos visuales del portal público. La gestión de usuarios internos, permisos y datos operativos del DAGMA se realiza en el Centro de Monitoreo Ambiental (SEMO); el Observatorio la consume mediante servicios/API.</p>
+  <p class="tiny" style="background:#f3f6f4;padding:9px 13px;border-radius:9px;margin-bottom:14px">ⓘ Este panel administra únicamente los textos, noticias y elementos visuales del portal público. La gestión de usuarios internos, permisos y datos operativos del DAGMA se realiza en el Centro de Monitoreo Unificado Ambiental (CEMUA); el Observatorio la consume mediante servicios/API.</p>
   <div class="tabs">
     <div class="tab active">Textos y páginas</div><div class="tab">Noticias y alertas</div><div class="tab">Banners e imágenes</div><div class="tab">Observatorios comunitarios</div><div class="tab">Documentos y enlaces</div><div class="tab">Configuración visual</div>
   </div>
@@ -1602,7 +1602,7 @@ function admin(){
       <div class="card">
         <h3 class="section-title">FUENTES DE DATOS CONECTADAS</h3>
         <p class="tiny" style="margin-bottom:8px">El Observatorio consulta esta información mediante servicios/API; no la registra ni la edita.</p>
-        ${infoRow('Centro de Monitoreo Ambiental (SEMO)',pill('Conectado'))}
+        ${infoRow('Centro de Monitoreo Unificado Ambiental (CEMUA)',pill('Conectado'))}
         ${infoRow('IDESC (Infraestructura de Datos Espaciales)',pill('Conectado'))}
         ${infoRow('Observatorios comunitarios',pill('En migración','amber'))}
       </div>
@@ -1622,7 +1622,7 @@ function admin(){
       ${quickAction('◍+','Vincular observatorio')}${quickAction('▣+','Nuevo documento')}${quickAction('🎨','Identidad visual')}
     </div>
   </div>
-  <p class="tiny" style="margin-top:12px;text-align:center">ⓘ Este panel no gestiona credenciales, usuarios internos ni datos operativos del DAGMA; esa función permanece en el SEMO.</p>`;
+  <p class="tiny" style="margin-top:12px;text-align:center">ⓘ Este panel no gestiona credenciales, usuarios internos ni datos operativos del DAGMA; esa función permanece en el CEMUA.</p>`;
 }
 function cmsRow(ico,title,desc,status,date){
   return `<div class="user"><div class="avatar">${ico}</div><div><b>${title}</b><div class="tiny">${desc} · Actualizado ${date}</div></div><span class="pill ${status==='Publicado'?'':'grey'}">${status}</span><span class="row-actions">✎ 👁</span></div>`;
