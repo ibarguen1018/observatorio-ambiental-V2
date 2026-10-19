@@ -12,6 +12,11 @@ Cada vez que se construye o cambia algo en el prototipo se agrega una entrada **
 
 ---
 
+## 2026-10-19 · Corrección "La Vitrera" → "La Buitrera"
+**Qué se hizo:** se corrigió el nombre del corregimiento: "La Vitrera" pasó a **La Buitrera**.
+**Cómo se hizo:** reemplazo de texto en `home.html`, `index.html` y `app.js` (estación id 4, panel de observatorios). En `ZONAS` se quitó la entrada duplicada que quedaba.
+**Funciones:** nombre correcto del corregimiento en el portal, el geovisor y el filtro de zonas.
+
 ## 2026-10-11 · Documentación del proyecto
 **Qué se hizo:** se creó la carpeta `Docs.app` con un resumen del prototipo y esta bitácora, y se dejó el archivo `AGENTS.md` con la guía técnica para agentes de IA.
 **Cómo se hizo:** documentos Markdown en `Docs.app/`; `AGENTS.md` en la raíz del repositorio indica que cada cambio debe registrarse aquí.

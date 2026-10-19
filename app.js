@@ -481,7 +481,7 @@ const geoStations = [
   { id:1,  nombre:'Ecoparque Río Pance',              lat:3.3230, lng:-76.5980, estado:'bueno',    pm25:6.1,  pm10:9.4,  ruido:48.2, ica:82, comuna:'Pance' },
   { id:2,  nombre:'Club Farallones',                  lat:3.2990, lng:-76.5750, estado:'bueno',    pm25:7.8,  pm10:11.2, ruido:51.0, ica:79, comuna:'Pance' },
   { id:3,  nombre:'Vereda La Buitrera',                lat:3.3400, lng:-76.6030, estado:'moderado', pm25:14.5, pm10:22.1, ruido:58.4, ica:68, comuna:'La Buitrera' },
-  { id:4,  nombre:'Carrera 125 - La Vitrera',          lat:3.3340, lng:-76.5700, estado:'bueno',    pm25:8.9,  pm10:13.0, ruido:53.1, ica:75, comuna:'La Vitrera' },
+  { id:4,  nombre:'Carrera 125 - La Buitrera',          lat:3.3340, lng:-76.5700, estado:'bueno',    pm25:8.9,  pm10:13.0, ruido:53.1, ica:75, comuna:'La Buitrera' },
   { id:5,  nombre:'Ciudad Pacífico',                   lat:3.3560, lng:-76.5470, estado:'moderado', pm25:18.2, pm10:27.6, ruido:61.7, ica:63, comuna:'Comuna 22' },
   { id:6,  nombre:'Hacienda Cataluña',                 lat:3.3480, lng:-76.5560, estado:'bueno',    pm25:9.3,  pm10:14.4, ruido:52.9, ica:77, comuna:'Comuna 22' },
   { id:7,  nombre:'Universidad ICESI',                 lat:3.3390, lng:-76.5320, estado:'alto',     pm25:24.7, pm10:35.9, ruido:68.3, ica:55, comuna:'Comuna 22' },
@@ -506,7 +506,7 @@ let geoMap = null, geoMarkers = [];
 
 /* ---- RF-08: personalización por comuna/barrio (mock con localStorage,
    tal como lo define la sección 2 del PDF para la Etapa 3) ---- */
-const ZONAS = ['Toda la ciudad','Comuna 1','Comuna 17','Comuna 18','Comuna 19','Comuna 22','La Buitrera','La Vitrera','Navarro','Pance','Villacarmelo'];
+const ZONAS = ['Toda la ciudad','Comuna 1','Comuna 17','Comuna 18','Comuna 19','Comuna 22','La Buitrera','Navarro','Pance','Villacarmelo'];
 state.zona = (function(){
   try { return localStorage.getItem('oa_zona') || 'Toda la ciudad'; } catch(e){ return 'Toda la ciudad'; }
 })();
@@ -1896,7 +1896,7 @@ function admin(){
         <h3 class="section-title">OBSERVATORIOS COMUNITARIOS VINCULADOS</h3>
         <p class="tiny" style="margin-bottom:8px">Observatorios de comunas y corregimientos alojados bajo el dominio institucional único del Observatorio Ambiental.</p>
         ${infoRow('Comuna 22 (OAC22)',pill('Visible'))}
-        ${infoRow('Corregimiento La Elvira / La Vitrera',pill('Visible'))}
+        ${infoRow('Corregimiento La Elvira / La Buitrera',pill('Visible'))}
         ${infoRow('Nuevos observatorios comunitarios',pill('Por vincular','grey'))}
         <button class="btn" style="width:100%;margin-top:10px">+ Vincular nuevo observatorio</button>
       </div>
