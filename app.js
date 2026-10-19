@@ -58,7 +58,7 @@ const ROLE_LABEL = { ciudadano:'Ciudadano', dagma:'Usuario DAGMA' };
 const roleSelect = document.getElementById('role-select');
 const roleLabel = document.getElementById('role-label');
 roleSelect.addEventListener('click', e=>{
-  const card = e.target.closest('.role-card'); if(!card) return;
+  const card = e.target.closest('.role-card'); if(!card || card.disabled) return; // DAGMA deshabilitado por ahora: solo acceso ciudadano
   roleSelect.querySelectorAll('.role-card').forEach(c=>c.classList.toggle('active', c===card));
   const role = card.dataset.role;
   roleLabel.textContent = ROLE_LABEL[role];

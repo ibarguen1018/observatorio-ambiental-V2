@@ -26,6 +26,7 @@ h1,h2,h3,h4,p{margin:0}
 .role-card b{font-size:13px}
 .role-card span{font-size:11px;color:var(--muted);line-height:1.4}
 .role-card.active{border-color:var(--green);background:var(--pale);box-shadow:0 0 0 3px rgba(14,124,66,.08)}
+.role-card:disabled{cursor:not-allowed;opacity:.55;background:#f5f6f5}
 #login-form label{display:block;font-size:12px;font-weight:650;color:#33413a;margin-bottom:14px}
 #login-form input[type=email],#login-form input[type=password]{width:100%;margin-top:6px;padding:11px 12px;border:1px solid var(--line);border-radius:8px;font-size:13px;background:#fbfcfb}
 .login-row{display:flex;justify-content:space-between;align-items:center;font-size:12px;margin-bottom:20px}

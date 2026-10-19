@@ -12,6 +12,11 @@ Cada vez que se construye o cambia algo en el prototipo se agrega una entrada **
 
 ---
 
+## 2026-10-19 · Acceso solo para la ciudadanía
+**Qué se hizo:** por solicitud de Wilmer, el ingreso queda habilitado por ahora solo para Ciudadano. La opción "Usuario DAGMA" se ve deshabilitada ("Disponible próximamente") y ya no rellena su correo ni su contraseña.
+**Cómo se hizo:** atributo `disabled` en la tarjeta DAGMA de `login.html` y `loguin.html`, estilo `.role-card:disabled` en `styles.css`, y en `app.js` el selector de rol ignora tarjetas deshabilitadas. Para reactivarlo basta con quitar `disabled` y restaurar el texto de la tarjeta.
+**Funciones:** solo se puede entrar como Ciudadano; los módulos exclusivos de DAGMA quedan fuera de alcance.
+
 ## 2026-10-19 · Corrección "La Vitrera" → "La Buitrera"
 **Qué se hizo:** se corrigió el nombre del corregimiento: "La Vitrera" pasó a **La Buitrera**.
 **Cómo se hizo:** reemplazo de texto en `home.html`, `index.html` y `app.js` (estación id 4, panel de observatorios). En `ZONAS` se quitó la entrada duplicada que quedaba.
