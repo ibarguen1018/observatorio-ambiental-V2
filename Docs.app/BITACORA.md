@@ -12,6 +12,11 @@ Cada vez que se construye o cambia algo en el prototipo se agrega una entrada **
 
 ---
 
+## 2026-10-21 · Enlace público de los informes finales
+**Qué se hizo:** en la versión publicada, los informes finales de Comuna 22 y La Buitrera no abrían porque GitHub Pages no entrega archivos guardados con Git LFS.
+**Cómo se hizo:** en `data.js` esos dos documentos tienen un campo `remote` con su enlace de `media.githubusercontent.com` (el mismo repositorio de GitHub). Al inicio de `ciudadania.js`, si la página no se abre como archivo local, `file` se reemplaza por `remote`.
+**Funciones:** en la web los dos informes se descargan desde GitHub; en la copia local se siguen abriendo desde `documentos/` sin internet. En la web, el enlace a una página concreta (`#page=`) descarga el PDF completo.
+
 ## 2026-10-21 · Versión ciudadana (Comuna 22 y La Buitrera)
 **Qué se hizo:** la app se reemplazó por la versión de consulta ciudadana de `Observatorio_Ciudadano`: acceso directo sin login ni roles, enfocada en Comuna 22 y el corregimiento La Buitrera. Se retiraron el shell móvil, el login, el Geovisor con estaciones IoT y Recurso Hídrico.
 **Cómo se hizo:** se copiaron `index.html`, `ciudadania.css`, `ciudadania.js`, `data.js`, `assets/` (mapas e imágenes) y `documentos/` (PDF, Excel y geodatabases), junto con `LEEME.txt`, `Ajustes_del_prototipo.md` y `Verificacion.txt`. `home.html`, `login.html` y `loguin.html` ahora redirigen a `index.html`. Se eliminaron `app.js`, `styles.css` y `home.js` (quedan en el historial de git).
