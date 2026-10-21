@@ -1,0 +1,18 @@
+VERIFICACIÓN PROGRAMÁTICA · 20 de octubre de 2026
+
+CORRECTO · 14 pantallas: siete secciones en ambos territorios
+CORRECTO · Siete resultados de Comuna 22 y sus siete fichas
+CORRECTO · 111 fichas de La Buitrera, diez componentes y páginas válidas
+CORRECTO · Filtros por búsqueda, tema y tipo PER; estado vacío
+CORRECTO · Filtro de La Buitrera por agua, sin resultados inventados
+CORRECTO · Diez temas cartográficos; 21 imágenes originales y zoom acotado
+CORRECTO · Mapa de La Buitrera sin extrapolación de estaciones
+CORRECTO · Biblioteca filtrada por territorio y por formato
+CORRECTO · Biodiversidad: 212 registros de aves y 77 nombres distintos
+CORRECTO · Cuaderno: separación por territorio y texto escapado
+CORRECTO · Todos los documentos y mapas existen; rutas locales sin enlaces rotos
+CORRECTO · Sin módulo interno ni dependencias externas de ejecución
+
+Alcance: ejecución de la lógica JavaScript con DOM simulado, integridad de rutas y datos. No constituye verificación visual ni una prueba de navegador real. La vista local fue bloqueada por restricciones del entorno.
+
+Integridad: 15 archivos PDF y Excel con SHA-256 idéntico a los originales.

@@ -12,6 +12,11 @@ Cada vez que se construye o cambia algo en el prototipo se agrega una entrada **
 
 ---
 
+## 2026-10-21 · Versión ciudadana (Comuna 22 y La Buitrera)
+**Qué se hizo:** la app se reemplazó por la versión de consulta ciudadana de `Observatorio_Ciudadano`: acceso directo sin login ni roles, enfocada en Comuna 22 y el corregimiento La Buitrera. Se retiraron el shell móvil, el login, el Geovisor con estaciones IoT y Recurso Hídrico.
+**Cómo se hizo:** se copiaron `index.html`, `ciudadania.css`, `ciudadania.js`, `data.js`, `assets/` (mapas e imágenes) y `documentos/` (PDF, Excel y geodatabases), junto con `LEEME.txt`, `Ajustes_del_prototipo.md` y `Verificacion.txt`. `home.html`, `login.html` y `loguin.html` ahora redirigen a `index.html`. Se eliminaron `app.js`, `styles.css` y `home.js` (quedan en el historial de git).
+**Funciones:** selector de territorio; Inicio, Indicadores (filtros por tema y tipo PER, fichas y CSV), Mapas del territorio (21 mapas con cortes temporales y zoom), Biodiversidad (aves y flora con filtros y CSV), Biblioteca de documentos, Participa y aprende (cuaderno de notas en el navegador con descarga JSON) y Sobre el observatorio. Funciona sin internet (`render`, `drawIndicators`, `drawMap`, `drawBio`, `drawDocs`, `drawNotes`).
+
 ## 2026-10-19 · Acceso solo para la ciudadanía
 **Qué se hizo:** por solicitud de Wilmer, el ingreso queda habilitado por ahora solo para Ciudadano. La opción "Usuario DAGMA" se ve deshabilitada ("Disponible próximamente") y ya no rellena su correo ni su contraseña.
 **Cómo se hizo:** atributo `disabled` en la tarjeta DAGMA de `login.html` y `loguin.html`, estilo `.role-card:disabled` en `styles.css`, y en `app.js` el selector de rol ignora tarjetas deshabilitadas. Para reactivarlo basta con quitar `disabled` y restaurar el texto de la tarjeta.

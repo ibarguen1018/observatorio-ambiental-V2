@@ -1,0 +1,44 @@
+OBSERVATORIO AMBIENTAL - VERSIÓN CIUDADANA
+Comuna 22 y corregimiento La Buitrera
+Preparada el 20 de octubre de 2026
+
+ABRIR LA APLICACIÓN
+1. Descomprime toda la carpeta. No abras el HTML desde dentro del ZIP.
+2. Abre index.html en Chrome o Edge.
+3. Elige el territorio en el selector superior.
+4. Navega por indicadores, mapas, biodiversidad, biblioteca y participación.
+
+La aplicación, los mapas y los documentos están incluidos y pueden consultarse sin internet.
+No requiere instalación, contraseña ni registro.
+Conserva juntas las carpetas assets y documentos y los archivos de la aplicación.
+Los enlaces antiguos home.html, login.html y loguin.html conducen al nuevo inicio.
+
+ALCANCE
+Prototipo de consulta ciudadana basado en los archivos compartidos. Las fuentes
+pertenecen al proyecto 2025; cada indicador conserva su periodo de referencia.
+No recibe trámites, denuncias ni reportes institucionales. No tiene conexión operativa
+a CEMUA, IDESC ni a sensores en tiempo real.
+El cuaderno guarda notas personales en el navegador. Puedes descargarlas en JSON.
+El almacenamiento puede variar entre navegadores, equipos y modo privado.
+
+INFORMACIÓN Y FUENTES
+Comuna 22: siete indicadores, atlas de 21 mapas, registros del anexo de aves,
+selección de plantas de importancia y documentación descargable.
+La Buitrera: 111 fichas de indicadores formulados, en diez componentes, y documentos.
+El anexo contiene 112 tablas; la tabla 60 es una síntesis, no una ficha adicional.
+La Buitrera no se presenta como una red de medición operativa.
+No se atribuyen los inventarios de Comuna 22 al corregimiento.
+
+Los documentos conservan su contenido original. El informe final de biodiversidad
+y el informe final de Comuna 22 son idénticos en los ZIP recibidos; se incluye una copia.
+La biblioteca ofrece las geodatabases, sin los respaldos de proyectos de ArcGIS,
+archivos temporales ni rásteres pesados de trabajo. Los mapas públicos sí se incluyen.
+
+PUBLICACIÓN
+La versión está preparada como sitio estático. El enlace público no quedó habilitado:
+la sincronización con el alojamiento fue bloqueada por la revisión automática de permisos.
+La carpeta completa puede alojarse en un servicio de sitios estáticos.
+
+VALIDACIÓN
+Se revisaron sintaxis, archivos enlazados, integridad de documentos y consistencia de datos.
+La comprobación visual en navegador no pudo completarse por restricciones de la vista local.
